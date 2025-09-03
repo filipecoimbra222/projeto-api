@@ -1,10 +1,17 @@
 package com.projetoapi.projeto_api.model;
 
-
-import jakarta.persistence.*;
-
 import java.util.Objects;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+
+/**
+ * Classe que representa uma Categoria no sistema.
+ */
 @Entity
 @Table(name = "categorias")
 public class Categoria {
@@ -13,6 +20,7 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
+    @NotNull(message = "O nome da categoria não pode ser nulo")
     private String nome;
 
     public Long getCodigo() {
@@ -33,13 +41,14 @@ public class Categoria {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Categoria categoria = (Categoria) o;
-        return Objects.equals(getCodigo(), categoria.getCodigo());
+        return Objects.equals(codigo, categoria.codigo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getCodigo());
+        return Objects.hash(codigo);
     }
 }
