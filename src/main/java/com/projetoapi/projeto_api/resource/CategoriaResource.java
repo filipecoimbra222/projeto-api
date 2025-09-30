@@ -3,7 +3,9 @@ package com.projetoapi.projeto_api.resource;
 import java.net.URI;
 import java.util.List;
 
+import com.projetoapi.projeto_api.event.RecursoCriadoEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +33,9 @@ public class CategoriaResource {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Autowired
+    ApplicationEventPublisher publisher;
+
     /**
      * Lista todas as categorias cadastradas.
      * 
@@ -55,15 +60,9 @@ public class CategoriaResource {
         
         Categoria categoriaSalva = categoriaRepository.save(categoria);
         
-        URI uri = ServletUriComponentsBuilder
-            .fromCurrentRequestUri()
-            .path("/{codigo}")
-            .buildAndExpand(categoriaSalva.getCodigo())
-            .toUri();
-            
-        response.setHeader("Location", uri.toASCIIString());
+        publisher.publishEvent(new RecursoCriadoEvent(this, response, categoriaSalva.getCodigo()));
 
-        return ResponseEntity.created(uri).body(categoriaSalva);
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoriaSalva);
     }
 
     /**
