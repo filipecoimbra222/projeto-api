@@ -2,12 +2,15 @@ package com.projetoapi.projeto_api.exceptionhandler;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +18,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -44,16 +50,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             LocaleContextHolder.getLocale()
         );
         
-        String mensagemDesenvolvedor = ex.getMostSpecificCause() != null 
-            ? ex.getMostSpecificCause().toString() 
-            : ex.toString();
+        String mensagemDesenvolvedor = ex.getMostSpecificCause().toString();
             
         List<Error.ErrorData> erros = List.of(
             new Error.ErrorData(mensagemUsuario, mensagemDesenvolvedor)
         );
         
         return handleExceptionInternal(
-            ex, 
+            ex,
             new Error(
                 status.value(),
                 "Corpo da requisição inválido. Verifique o erro de sintaxe.",
@@ -64,6 +68,23 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             status, 
             request
         );
+    }
+
+    @ExceptionHandler(EmptyResultDataAccessException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<Object> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex,WebRequest request) {
+
+        String mensagemUsuario = messageSource.getMessage("recurso.nao-encontrado", null, LocaleContextHolder.getLocale());
+        String mensagemDesenvolvedor = ex.toString();
+        List<Error.ErrorData> erros = List.of(new Error.ErrorData(mensagemUsuario, mensagemDesenvolvedor));
+        Error error = new Error(
+            HttpStatus.NOT_FOUND.value(),
+            mensagemUsuario,
+            OffsetDateTime.now(),
+            erros
+        );
+        return handleExceptionInternal(ex, error, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+
     }
 
     /**
@@ -111,6 +132,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Classe que representa a estrutura padrão de erros da API.
      */
+    @Getter
     public static class Error {
         private final Integer status;
         private final String titulo;
@@ -124,18 +146,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             this.erros = new ArrayList<>(erros); // Defensive copy
         }
 
-        public Integer getStatus() {
-            return status;
-        }
-
-        public String getTitulo() {
-            return titulo;
-        }
-
-        public OffsetDateTime getDataHora() {
-            return dataHora;
-        }
-
+        // Custom getter for defensive copy of the list
         public List<ErrorData> getErros() {
             return new ArrayList<>(erros); // Defensive copy
         }
@@ -143,6 +154,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         /**
          * Classe que representa os detalhes de um erro específico.
          */
+        @Getter
         public static class ErrorData {
             private final String mensagemUsuario;
             private final String mensagemDesenvolvedor;
@@ -152,14 +164,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 this.mensagemDesenvolvedor = mensagemDesenvolvedor;
             }
 
-            // Getters
-            public String getMensagemUsuario() {
-                return mensagemUsuario;
-            }
-
-            public String getMensagemDesenvolvedor() {
-                return mensagemDesenvolvedor;
-            }
+            // Getters are now provided by @Lombok
         }
+        
     }
 }
