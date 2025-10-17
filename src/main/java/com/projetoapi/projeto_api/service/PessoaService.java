@@ -34,7 +34,7 @@ public class PessoaService {
         pessoaRepository.save(pessoaSalva);
     }
 
-    private Pessoa buscarPessoaPeloCodigo(Long codigo) {
+    public Pessoa buscarPessoaPeloCodigo(Long codigo) {
         Pessoa pessoaSalva = pessoaRepository.findById(codigo).orElse(null);
 
         if (pessoaSalva == null) {
