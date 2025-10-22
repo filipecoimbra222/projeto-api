@@ -1,5 +1,7 @@
 package com.projetoapi.projeto_api.resource;
 
+import com.projetoapi.projeto_api.dto.PessoaInputDTO;
+import com.projetoapi.projeto_api.dto.PessoaOutputDTO;
 import com.projetoapi.projeto_api.event.RecursoCriadoEvent;
 import com.projetoapi.projeto_api.model.Pessoa;
 import com.projetoapi.projeto_api.repository.PessoaRepository;
@@ -12,13 +14,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/pessoas")
@@ -34,47 +34,63 @@ public class PessoaResource {
     private ApplicationEventPublisher publisher;
 
     @GetMapping
-    public List<Pessoa> listar() {
-        return pessoaRepository.findAll();
+    public List<PessoaOutputDTO> listar() {
+        return pessoaRepository.findAll().stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
     }
-
-
 
     @PostMapping
-    public ResponseEntity<Pessoa> criar(@Validated @RequestBody Pessoa pessoa, HttpServletResponse response) {
+    public ResponseEntity<PessoaOutputDTO> criar(@Valid @RequestBody PessoaInputDTO dto, HttpServletResponse response) {
+        Pessoa pessoa = converterParaEntidade(dto);
         Pessoa pessoaSalva = pessoaRepository.save(pessoa);
-        publisher.publishEvent(new RecursoCriadoEvent(this, response, pessoaSalva.getCodigo()));
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaSalva);
-
-
+        
+        publisher.publishEvent(new RecursoCriadoEvent(this, response, pessoaSalva.getId()));
+        
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(converterParaDTO(pessoaSalva));
     }
 
-    @GetMapping("/{codigo}")
-    public ResponseEntity<Pessoa> buscarPeloCodigo(@PathVariable Long codigo) {
-        Pessoa pessoa = pessoaRepository.findById(codigo)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada"));
-        return ResponseEntity.ok(pessoa);
+    @GetMapping("/{id}")
+    public ResponseEntity<PessoaOutputDTO> buscarPeloId(@PathVariable Long id) {
+        Pessoa pessoa = buscarPessoaPeloId(id);
+        return ResponseEntity.ok(converterParaDTO(pessoa));
     }
 
-    @DeleteMapping("/{codigo}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable Long codigo) {
-        Pessoa pessoa = pessoaRepository.findById(codigo)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada"));
+    public void remover(@PathVariable Long id) {
+        Pessoa pessoa = buscarPessoaPeloId(id);
         pessoaRepository.delete(pessoa);
     }
 
-    @PutMapping("/{codigo}")
-    public ResponseEntity<Pessoa> atualizar(@PathVariable Long codigo, @Valid @RequestBody Pessoa pessoa) {
-        Pessoa pessoaSalva = pessoaService.atualizar(codigo, pessoa);
-        return ResponseEntity.ok(pessoaSalva);
+    @PutMapping("/{id}")
+    public ResponseEntity<PessoaOutputDTO> atualizar(@PathVariable Long id, @Valid @RequestBody PessoaInputDTO dto) {
+        Pessoa pessoaAtualizada = pessoaService.atualizar(id, converterParaEntidade(dto));
+        return ResponseEntity.ok(converterParaDTO(pessoaAtualizada));
     }
 
-    @PutMapping("/{codigo}/ativo")
+    @PutMapping("/{id}/ativo")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void atualizarPropriedadeAtivo(@PathVariable Long codigo, @RequestBody Boolean ativo) {
-        pessoaService.atualizarPropriedadeAtivo(codigo, ativo);
+    public void atualizarStatus(@PathVariable Long id, @RequestBody Boolean ativo) {
+        pessoaService.atualizarPropriedadeAtivo(id, ativo);
     }
 
+    private Pessoa buscarPessoaPeloId(Long id) {
+        return pessoaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pessoa não encontrada"));
+    }
+
+    private Pessoa converterParaEntidade(PessoaInputDTO dto) {
+        Pessoa pessoa = new Pessoa();
+        BeanUtils.copyProperties(dto, pessoa);
+        return pessoa;
+    }
+
+    private PessoaOutputDTO converterParaDTO(Pessoa pessoa) {
+        PessoaOutputDTO dto = new PessoaOutputDTO();
+        BeanUtils.copyProperties(pessoa, dto);
+        return dto;
+    }
 }

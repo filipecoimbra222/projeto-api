@@ -15,31 +15,31 @@ public class Lancamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long codigo;
+    private long id;
     private String descricao;
 
-    @NotNull
+    @NotNull(message = "Data de vencimento é obrigatória")
     @Column (name = "data_vencimento")
     private LocalDate dataVencimento;
 
     @Column (name = "data_pagamento")
     private LocalDate dataPagamento;
 
-    @NotNull
+    @NotNull(message = "Valor é obrigatório")
     private BigDecimal valor;
 
     private String observacao;
 
-    @NotNull
+    @NotNull(message = "Tipo de lançamento é obrigatório")
     @Enumerated(EnumType.STRING)
     private TipoLancamento tipo;
 
-    @NotNull
+    @NotNull(message = "Categoria é obrigatória")
     @ManyToOne
     @JoinColumn(name = "codigo_categoria")
     private Categoria categoria;
 
-    @NotNull
+    @NotNull(message = "Pessoa é obrigatória")
     @ManyToOne
     @JoinColumn(name = "codigo_pessoa")
     private Pessoa pessoa;
