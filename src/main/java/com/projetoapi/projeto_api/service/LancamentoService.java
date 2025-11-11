@@ -27,7 +27,7 @@ public class LancamentoService {
     }
 
     public Lancamento salvar (Lancamento lancamento) {
-        Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getCodigo())
+        Pessoa pessoa = pessoaRepository.findById(lancamento.getPessoa().getId())
                 .orElseThrow(() -> new EmptyResultDataAccessException(1));
 
         if (pessoa == null || pessoa.isInativo()) {
