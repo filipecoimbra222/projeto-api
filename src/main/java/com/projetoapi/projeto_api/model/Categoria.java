@@ -1,10 +1,6 @@
 package com.projetoapi.projeto_api.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -18,8 +14,10 @@ public class Categoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "codigo")
     private Long id;
 
     @NotNull(message = "O nome da categoria não pode ser nulo")
+    @Column(name = "nome")
     private String nome;
 }

@@ -53,14 +53,14 @@ public class PessoaResource {
 
     @GetMapping("/{id}")
     public ResponseEntity<PessoaOutputDTO> buscarPeloId(@PathVariable Long id) {
-        Pessoa pessoa = buscarPessoaPeloId(id);
+        Pessoa pessoa = pessoaService.buscarPessoaPeloId(id);
         return ResponseEntity.ok(converterParaDTO(pessoa));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void remover(@PathVariable Long id) {
-        Pessoa pessoa = buscarPessoaPeloId(id);
+        Pessoa pessoa = pessoaService.buscarPessoaPeloId(id);
         pessoaRepository.delete(pessoa);
     }
 
@@ -76,11 +76,6 @@ public class PessoaResource {
         pessoaService.atualizarPropriedadeAtivo(id, ativo);
     }
 
-    private Pessoa buscarPessoaPeloId(Long id) {
-        return pessoaRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Pessoa não encontrada"));
-    }
 
     private Pessoa converterParaEntidade(PessoaInputDTO dto) {
         Pessoa pessoa = new Pessoa();

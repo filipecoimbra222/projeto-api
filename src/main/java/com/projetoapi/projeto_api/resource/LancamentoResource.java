@@ -107,4 +107,10 @@ public class LancamentoResource {
     public List<Lancamento> pesquisar (LancamentoFilter lancamentoFilter) {
         return lancamentoRepository.filtrar(lancamentoFilter);
     }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable Long id) {
+       Lancamento lancamento = lancamentoService.buscarLancamentoPeloId(id);
+        lancamentoRepository.delete(lancamento);
+    }
 }
