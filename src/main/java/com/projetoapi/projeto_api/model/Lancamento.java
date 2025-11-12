@@ -15,6 +15,7 @@ public class Lancamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "codigo")
     private long id;
     private String descricao;
 
@@ -36,12 +37,12 @@ public class Lancamento {
 
     @NotNull(message = "Categoria é obrigatória")
     @ManyToOne
-    @JoinColumn(name = "codigo_categoria")
+    @JoinColumn(name = "codigo_categoria", referencedColumnName = "codigo")
     private Categoria categoria;
 
     @NotNull(message = "Pessoa é obrigatória")
     @ManyToOne
-    @JoinColumn(name = "codigo_pessoa")
+    @JoinColumn(name = "codigo_pessoa", referencedColumnName = "codigo")
     private Pessoa pessoa;
 
 }

@@ -20,10 +20,6 @@ import com.projetoapi.projeto_api.repository.CategoriaRepository;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-
-/**
- * Controlador REST para gerenciar operações relacionadas a Categorias.
- */
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaResource {
@@ -34,11 +30,6 @@ public class CategoriaResource {
     @Autowired
     ApplicationEventPublisher publisher;
 
-    /**
-     * Lista todas as categorias cadastradas.
-     * 
-     * @return Lista de categorias
-     */
     @GetMapping
     public List<CategoriaOutputDTO> listar() {
         return categoriaRepository.findAll().stream()
@@ -46,13 +37,6 @@ public class CategoriaResource {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Cria uma nova categoria.
-     * 
-     * @param categoria Dados da categoria a ser criada
-     * @param response Objeto de resposta HTTP
-     * @return A categoria criada
-     */
     @PostMapping
     public ResponseEntity<CategoriaOutputDTO> criar(
             @Valid @RequestBody CategoriaInputDTO dto,
@@ -67,13 +51,6 @@ public class CategoriaResource {
                 .body(converterParaDTO(categoriaSalva));
     }
 
-    /**
-     * Busca uma categoria pelo seu código.
-     * 
-     * @param codigo Código da categoria
-     * @return A categoria encontrada
-     * @throws ResponseStatusException Se a categoria não for encontrada
-     */
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaOutputDTO> buscarPeloId(@PathVariable Long id) {
         Categoria categoria = categoriaRepository.findById(id)
