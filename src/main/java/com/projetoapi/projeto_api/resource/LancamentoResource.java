@@ -14,6 +14,8 @@ import com.projetoapi.projeto_api.service.PessoaInexistenteOuInativaException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -104,8 +106,9 @@ public class LancamentoResource {
         return ResponseEntity.badRequest().body(erros);
     }
 
-    public List<Lancamento> pesquisar (LancamentoFilter lancamentoFilter) {
-        return lancamentoRepository.filtrar(lancamentoFilter);
+    @GetMapping
+    public Page<Lancamento> pesquisar (LancamentoFilter lancamentoFilter, Pageable pageable) {
+        return lancamentoRepository.filtrar(lancamentoFilter, pageable);
     }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
